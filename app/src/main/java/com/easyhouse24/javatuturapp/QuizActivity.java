@@ -38,6 +38,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
 
+import static com.easyhouse24.javatuturapp.QuestionFragment.KEY_HIGHSCORE;
+import static com.easyhouse24.javatuturapp.QuestionFragment.SHARED_PREF_Bronze;
+import static com.easyhouse24.javatuturapp.QuestionFragment.SHARED_PREF_GOLD;
+import static com.easyhouse24.javatuturapp.QuestionFragment.SHARED_PREF_SILVER;
+
 public class QuizActivity extends AppCompatActivity {
     public static final String EXTRA_SCORE = "extraScore";
     private Toolbar mToolbar;
@@ -85,6 +90,8 @@ public class QuizActivity extends AppCompatActivity {
 
     private int questionCountTotal;
 
+    private TextView textView3;
+
     private Question currentQuestion;
 
     private int score;
@@ -109,6 +116,9 @@ public class QuizActivity extends AppCompatActivity {
         textViewQuestionCount = findViewById(R.id.textView4);
 
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+
+        textView3 = (TextView) findViewById(R.id.textViewSolution);
+        textView3.setVisibility(View.INVISIBLE);
 
         //Making progressBar visible
         mProgressBar.setVisibility(View.VISIBLE);
@@ -534,6 +544,7 @@ public class QuizActivity extends AppCompatActivity {
 
         mRadioGroup.clearCheck();
 
+
         //implementing a progress bar
 
         int questionCounter1 = mQuestionList.size();
@@ -548,6 +559,7 @@ public class QuizActivity extends AppCompatActivity {
 
         if (questionCounter < questionCountTotal)
         {
+            textView3.setVisibility(View.INVISIBLE);
             currentQuestion = mQuestionList.get(questionCounter);
 
             textViewQuestion.setText(currentQuestion.getQuestion());
@@ -569,7 +581,7 @@ public class QuizActivity extends AppCompatActivity {
 
         }
         else{
-            finishQuiz();
+            showScoreAlert(score);
         }
 
 
@@ -657,24 +669,33 @@ public class QuizActivity extends AppCompatActivity {
         switch (currentQuestion.getAnswerNr()){
             case 1:
                 mRadioButton1.setTextColor(Color.GREEN);
-                textViewQuestion.setText(currentQuestion.getSolution());
+                textViewQuestion.setText(currentQuestion.getQuestion());
+                textView3.setVisibility(View.VISIBLE);
+                textView3.setText(currentQuestion.getSolution());
                 break;
             case 2:
                 mRadioButton2.setTextColor(Color.GREEN);
-                textViewQuestion.setText(currentQuestion.getSolution());
+                textView3.setVisibility(View.VISIBLE);
+                textViewQuestion.setText(currentQuestion.getQuestion());
+                textView3.setText(currentQuestion.getSolution());
                 break;
             case 3:
                 mRadioButton3.setTextColor(Color.GREEN);
-                textViewQuestion.setText(currentQuestion.getSolution());
+                textView3.setVisibility(View.VISIBLE);
+                textViewQuestion.setText(currentQuestion.getQuestion());
+                textView3.setText(currentQuestion.getSolution());
                 break;
             case 4:
                 mRadioButton4.setTextColor(Color.GREEN);
-                textViewQuestion.setText(currentQuestion.getSolution());
+                textView3.setVisibility(View.VISIBLE);
+                textViewQuestion.setText(currentQuestion.getQuestion());
+                textView3.setText(currentQuestion.getSolution());
                 break;
         }
 
         if (questionCounter < questionCountTotal)
         {
+
             btn.setText("Next");
         }
         else{
@@ -682,11 +703,46 @@ public class QuizActivity extends AppCompatActivity {
         }
     }
     public void finishQuiz(){
+        if (score >= 7 && score < 9) {
+
+            SharedPreferences prefSilver = getSharedPreferences(SHARED_PREF_SILVER, MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefSilver.edit();
+            editor.putInt(KEY_HIGHSCORE, 1).apply();
+        }
+        else if(score >= 9){
+            SharedPreferences prefGold =getSharedPreferences(SHARED_PREF_GOLD, MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefGold.edit();
+            editor.putInt(KEY_HIGHSCORE, 1).apply();
+
+        }
+        else if (score >= 5 && score < 7){
+            SharedPreferences prefBronze = getSharedPreferences(SHARED_PREF_Bronze, MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefBronze.edit();
+            editor.putInt(KEY_HIGHSCORE, 1).apply();
+        }
         Intent resultIntent = new Intent();
 
         resultIntent.putExtra(EXTRA_SCORE,score);
         setResult(RESULT_OK,resultIntent);
         finish();
+    }
+
+    public void showScoreAlert(int scores){
+
+        String x = String.valueOf(scores);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finishQuiz();
+            }
+
+        });
+
+        builder.setMessage("You've answered " + x +" correct questions out of 10. Your score is " + x +" /10");
+        builder.show();
+
     }
 
     public void makeSnackBar(int message, int turnOff, final int message2) {
